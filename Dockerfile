@@ -9,4 +9,5 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /helm-version-check /app
 EXPOSE 9080
+ENV NAMESPACE=argocd
 ENTRYPOINT ["/app/helm-version-check", "--verbose"]

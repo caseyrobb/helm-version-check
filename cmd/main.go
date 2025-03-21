@@ -178,6 +178,13 @@ func main() {
 	}
 	infoLogger.Printf("Starting helm-app-lister with verbose=%v", verbose)
 
+	// Get namespace from environment variable, default to "argocd"
+	namespace := os.Getenv("NAMESPACE")
+	if namespace == "" {
+		namespace = "argocd"
+	}
+	infoLogger.Printf("Using namespace: %s", namespace)
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("Error getting in-cluster config: %v", err)
@@ -194,7 +201,6 @@ func main() {
 		verboseLogger.Println("Created Kubernetes dynamic client")
 	}
 
-	namespace := "argocd"
 	gvr := schema.GroupVersionResource{
 		Group:    "argoproj.io",
 		Version:  "v1alpha1",
@@ -215,7 +221,7 @@ func main() {
 		}
 		list, err := clientset.Resource(gvr).Namespace(namespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
-			infoLogger.Printf("Error listing applications: %v", err)
+			infoLogger.Printf("Error listing applications in namespace %s: %v", namespace, err)
 			if verbose {
 				verboseLogger.Printf("Full error details: %v", err)
 			}
