@@ -21,3 +21,8 @@ spec:
         image: quay.io/carobb/helm-version-check:latest
         ports:
         - containerPort: 9080
+        env:
+        - name: NAMESPACE
+          value: argocd
+        - name: DEBUG
+          value: ''

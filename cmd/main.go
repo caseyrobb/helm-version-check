@@ -173,7 +173,7 @@ func processHelmSource(appName string, source map[string]interface{}, verbose bo
 
 func main() {
 	verbose := false
-	if len(os.Args) > 1 && os.Args[1] == "--verbose" {
+	if os.Getenv("DEBUG") == "true" {
 		verbose = true
 	}
 	infoLogger.Printf("Starting helm-app-lister with verbose=%v", verbose)
