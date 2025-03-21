@@ -6,3 +6,6 @@ This project provides a tool to list ArgoCD applications that use Helm as their 
 
 - Kubernetes cluster with ArgoCD installed
 - ArgoCD Application using Helm as a source
+
+## Dashboard
+![alt text](https://raw.githubusercontent.com/caseyrobb/helm-version-check/master/dashboard.png)
