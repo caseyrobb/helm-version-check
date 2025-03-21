@@ -25,4 +25,4 @@ spec:
         - name: NAMESPACE
           value: argocd
         - name: DEBUG
-          value: ''
+          value: 'false'
