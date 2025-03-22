@@ -25,4 +25,4 @@ spec:
         - name: NAMESPACE
           value: argocd
         - name: LOGLEVEL
-          value: 'info'
+          value: info
