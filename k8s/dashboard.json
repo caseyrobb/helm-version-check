@@ -126,7 +126,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 100
               }
             ]
           },
@@ -151,6 +151,42 @@
               {
                 "id": "displayName",
                 "value": "Helm Repo"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Upstream Version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Latest Version"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Chart Name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Application"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
               }
             ]
           }
@@ -192,6 +228,7 @@
           "expr": "helm_chart_version_status",
           "format": "table",
           "instant": true,
+          "legendFormat": "__auto",
           "refId": "A"
         }
       ],
@@ -246,6 +283,6 @@
   "timezone": "",
   "title": "ArgoCD Helm Chart Version Monitor",
   "uid": "argocd-helm-version-monitor",
-  "version": 6,
+  "version": 9,
   "weekStart": ""
 }
