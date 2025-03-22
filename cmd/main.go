@@ -90,7 +90,7 @@ func getLatestChartVersion(repoURL, chartName string, verbose bool) (string, err
 
 // processHelmSource handles a single Helm source and updates metrics
 func processHelmSource(appName string, source map[string]interface{}, verbose bool) {
-	helm, helmFound := source["helm"]
+	helm, helmFound := source["chart"]
 	if !helmFound || helm == nil {
 		if verbose {
 			verboseLogger.Printf("No Helm source found for %s in this source", appName)
