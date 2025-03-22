@@ -61,6 +61,12 @@ func getLatestChartVersion(repoURL, chartName string, verbose bool) (string, err
 	}
 
 	versions, ok := index.Entries[chartName]
+	if verbose {
+		verboseLogger.Printf("Found %d versions of %s", len(versions), chartName)
+		for _, v := range versions {
+			verboseLogger.Printf("Found version: %s", v.Version)
+		}
+	}
 	if !ok || len(versions) == 0 {
 		if verbose {
 			verboseLogger.Printf("Chart %s not found in repository %s", chartName, repoURL)
@@ -176,7 +182,7 @@ func main() {
 	if os.Getenv("LOGLEVEL") == "debug" {
 		verbose = true
 	}
-	infoLogger.Printf("Starting helm-app-lister with verbose=%v", verbose)
+	infoLogger.Printf("Starting helm-version-check with loglevel=%s", os.Getenv("LOGLEVEL"))
 
 	// Get namespace from environment variable, default to "argocd"
 	namespace := os.Getenv("NAMESPACE")
