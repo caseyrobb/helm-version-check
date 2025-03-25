@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Masterminds/semver/v3"
@@ -20,16 +21,70 @@ import (
 )
 
 var (
-	helmVersionGauge = prometheus.NewGaugeVec(
+	verboseLogger    = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLogger       = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
+	helmVersionGauge = newExpiringGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "helm_chart_version_status",
 			Help: "Status of Helm chart versions (1 = up-to-date, 0 = outdated)",
 		},
 		[]string{"application", "chart", "repo_url", "current_version", "latest_version"},
+		15*time.Minute, // Metrics expire after 15 minutes
 	)
-	verboseLogger = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
-	infoLogger    = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
 )
+
+// expiringGaugeVec wraps a GaugeVec with expiration logic
+type expiringGaugeVec struct {
+	gauge   *prometheus.GaugeVec
+	metrics map[string]struct {
+		lastSet time.Time
+	}
+	mu  sync.Mutex
+	ttl time.Duration
+}
+
+func newExpiringGaugeVec(gaugeOpts prometheus.GaugeOpts, labelNames []string, ttl time.Duration) *expiringGaugeVec {
+	gauge := prometheus.NewGaugeVec(gaugeOpts, labelNames)
+	return &expiringGaugeVec{
+		gauge:   gauge,
+		metrics: make(map[string]struct{ lastSet time.Time }),
+		ttl:     ttl,
+	}
+}
+
+// WithLabelValues sets a gauge value and tracks its timestamp
+func (e *expiringGaugeVec) WithLabelValues(lvs ...string) prometheus.Gauge {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	key := strings.Join(lvs, "|")
+	e.metrics[key] = struct{ lastSet time.Time }{lastSet: time.Now()}
+	return e.gauge.WithLabelValues(lvs...)
+}
+
+// Collect implements the prometheus.Collector interface
+func (e *expiringGaugeVec) Collect(ch chan<- prometheus.Metric) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	now := time.Now()
+	for key, meta := range e.metrics {
+		if now.Sub(meta.lastSet) > e.ttl {
+			// Remove expired metric
+			lvs := strings.Split(key, "|")
+			e.gauge.DeleteLabelValues(lvs...)
+			delete(e.metrics, key)
+			if verboseLogger != nil {
+				verboseLogger.Printf("Expired metric for labels: %v", lvs)
+			}
+		}
+	}
+	e.gauge.Collect(ch)
+}
+
+// Describe implements the prometheus.Collector interface
+func (e *expiringGaugeVec) Describe(ch chan<- *prometheus.Desc) {
+	e.gauge.Describe(ch)
+}
 
 func init() {
 	prometheus.MustRegister(helmVersionGauge)
